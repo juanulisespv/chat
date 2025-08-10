@@ -2,6 +2,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const pdfParse = require('pdf-parse');
 const OpenAI = require('openai');
+const formidable = require('formidable');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const DEFAULT_URL = 'https://juanulisespv.github.io/CV/';
@@ -25,31 +26,40 @@ module.exports = async (req, res) => {
     return;
   }
 
-  try {
-    // Vercel serverless: req.body puede venir como JSON o como form-data
-    let pregunta = '';
-    let sessionId = '';
-    let url = '';
-    let pdfBuffer = null;
+  // Parsear form-data (PDF) o JSON
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    // Usar formidable para parsear form-data
+    const form = new formidable.IncomingForm();
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        res.status(400).json({ error: 'Error al procesar el formulario.' });
+        return;
+      }
+      await handleRequest(fields, files, res);
+    });
+  } else {
+    // JSON
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      let data = {};
+      try {
+        data = JSON.parse(body);
+      } catch {}
+      await handleRequest(data, {}, res);
+    });
+  }
+};
 
-    // Soportar tanto JSON como form-data
-    if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
-      // Vercel parsea automáticamente los archivos en req.files
-      if (req.files && req.files.pdf) {
-        pdfBuffer = req.files.pdf.data;
-      }
-      if (req.body) {
-        pregunta = req.body.pregunta || '';
-        sessionId = req.body.sessionId || '';
-        url = req.body.url || '';
-      }
-    } else {
-      // JSON
-      if (req.body) {
-        pregunta = req.body.pregunta || '';
-        sessionId = req.body.sessionId || '';
-        url = req.body.url || '';
-      }
+async function handleRequest(fields, files, res) {
+  try {
+    const pregunta = fields.pregunta || '';
+    const url = fields.url || '';
+    let pdfBuffer = null;
+    if (files.pdf && files.pdf.filepath) {
+      const fs = require('fs');
+      pdfBuffer = fs.readFileSync(files.pdf.filepath);
     }
 
     if (!pregunta) {
@@ -98,4 +108,4 @@ module.exports = async (req, res) => {
     }
     res.status(500).json({ error: errorMsg });
   }
-};
+}
