@@ -1,0 +1,5 @@
+node_modules/
+.env
+historial.json
+.DS_Store
+*.log
