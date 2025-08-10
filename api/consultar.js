@@ -1,0 +1,101 @@
+const axios = require('axios');
+const cheerio = require('cheerio');
+const pdfParse = require('pdf-parse');
+const OpenAI = require('openai');
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const DEFAULT_URL = 'https://juanulisespv.github.io/CV/';
+
+// Helper para extraer texto de una URL
+async function getTextFromUrl(url) {
+  const response = await axios.get(url);
+  const $ = cheerio.load(response.data);
+  return $('body').text().replace(/\s+/g, ' ').trim().substring(0, 8000);
+}
+
+// Helper para extraer texto de un PDF (buffer)
+async function getTextFromPdf(buffer) {
+  const data = await pdfParse(buffer);
+  return data.text.substring(0, 8000);
+}
+
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Método no permitido' });
+    return;
+  }
+
+  try {
+    // Vercel serverless: req.body puede venir como JSON o como form-data
+    let pregunta = '';
+    let sessionId = '';
+    let url = '';
+    let pdfBuffer = null;
+
+    // Soportar tanto JSON como form-data
+    if (req.headers['content-type'] && req.headers['content-type'].includes('multipart/form-data')) {
+      // Vercel parsea automáticamente los archivos en req.files
+      if (req.files && req.files.pdf) {
+        pdfBuffer = req.files.pdf.data;
+      }
+      if (req.body) {
+        pregunta = req.body.pregunta || '';
+        sessionId = req.body.sessionId || '';
+        url = req.body.url || '';
+      }
+    } else {
+      // JSON
+      if (req.body) {
+        pregunta = req.body.pregunta || '';
+        sessionId = req.body.sessionId || '';
+        url = req.body.url || '';
+      }
+    }
+
+    if (!pregunta) {
+      res.status(400).json({ error: 'Falta la pregunta.' });
+      return;
+    }
+
+    let texto = '';
+    if (url) {
+      try {
+        texto = await getTextFromUrl(url);
+      } catch {
+        res.status(400).json({ error: 'No se pudo obtener el texto de la URL.' });
+        return;
+      }
+    } else if (pdfBuffer) {
+      texto = await getTextFromPdf(pdfBuffer);
+    } else {
+      try {
+        texto = await getTextFromUrl(DEFAULT_URL);
+      } catch {
+        res.status(400).json({ error: 'No se pudo obtener el texto de la URL por defecto.' });
+        return;
+      }
+    }
+
+    // Construir prompt
+    let prompt = `Responde la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 25 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
+
+    const completion = await openai.completions.create({
+      model: 'gpt-3.5-turbo-instruct',
+      prompt,
+      max_tokens: 512,
+      temperature: 0.2,
+    });
+    const respuesta = completion.choices[0].text.trim();
+
+    res.status(200).json({ respuesta });
+  } catch (err) {
+    console.error('Error en /api/consultar:', err);
+    let errorMsg = 'Error procesando la consulta.';
+    if (err.response && err.response.data) {
+      errorMsg = err.response.data.error?.message || JSON.stringify(err.response.data);
+    } else if (err.message) {
+      errorMsg = err.message;
+    }
+    res.status(500).json({ error: errorMsg });
+  }
+};
