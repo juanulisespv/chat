@@ -1,3 +1,5 @@
+
+// Logica para permitir POST y manejar ifram
 module.exports = async (req, res) => {
   // Solo POST permitido
   if (req.method !== 'POST') {
@@ -15,8 +17,6 @@ module.exports = async (req, res) => {
   // Aquí tu lógica para el POST (ejemplo simple)
   res.status(200).json({ message: 'POST recibido' });
 };
-
-
 
 
 const axios = require('axios');
