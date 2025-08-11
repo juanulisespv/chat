@@ -87,13 +87,13 @@ async function handleRequest(fields, files, res) {
     }
 
     // Construir prompt
-    let prompt = `Responde la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 25 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
+    let prompt = `Responde la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
 
     const completion = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
       prompt,
       max_tokens: 512,
-      temperature: 0.2,
+      temperature: 0.7,
     });
     const respuesta = completion.choices[0].text.trim();
 
