@@ -1,24 +1,3 @@
-
-// Logica para permitir POST y manejar ifram
-module.exports = async (req, res) => {
-  // Solo POST permitido
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Método no permitido' });
-    return;
-  }
-
-  // Cabeceras para iframe (ojo, no usar X-Frame-Options: ALLOWALL porque no es válido)
-  res.removeHeader('X-Frame-Options');
-  res.setHeader(
-    'Content-Security-Policy',
-    "frame-ancestors 'self' https://mac-os-classic.vercel.app"
-  );
-
-  // Aquí tu lógica para el POST (ejemplo simple)
-  res.status(200).json({ message: 'POST recibido' });
-};
-
-
 const axios = require('axios');
 const cheerio = require('cheerio');
 const pdfParse = require('pdf-parse');
