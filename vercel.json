@@ -9,12 +9,8 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "X-Frame-Options",
-          "value": "ALLOW-FROM https://mac-os-classic.vercel.app/"
-        },
-        {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://mac-os-classic.vercel.app/"
+          "value": "frame-ancestors 'self' https://chat-git-main-juan-ulises-projects.vercel.app https://mac-os-classic.vercel.app"
         }
       ]
     }
