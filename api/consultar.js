@@ -1,3 +1,18 @@
+module.exports = async (req, res) => {
+  // 🔹 Cabeceras para permitir iframe desde tu otra app
+  res.setHeader("X-Frame-Options", "ALLOWALL");
+  res.setHeader(
+    "Content-Security-Policy",
+    "frame-ancestors 'self' https://mac-os-classic.vercel.app"
+  );
+
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Método no permitido' });
+    return;
+  }
+
+
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const pdfParse = require('pdf-parse');
