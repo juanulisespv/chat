@@ -3,20 +3,5 @@
   "routes": [
     { "src": "/api/consultar", "dest": "/api/consultar.js" },
     { "src": "/(.*)", "dest": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Frame-Options",
-          "value": ""
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://mac-os-classic.vercel.app"
-        }
-      ]
-    }
   ]
 }
