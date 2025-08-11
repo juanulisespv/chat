@@ -10,11 +10,11 @@
       "headers": [
         {
           "key": "X-Frame-Options",
-          "value": "ALLOW-FROM https://juanulisespv.github.io/mac-os-classic/"
+          "value": "ALLOW-FROM https://mac-os-classic.vercel.app/"
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors https://juanulisespv.github.io/mac-os-classic/"
+          "value": "frame-ancestors https://mac-os-classic.vercel.app/"
         }
       ]
     }
