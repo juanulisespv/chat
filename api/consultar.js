@@ -1,15 +1,21 @@
 module.exports = async (req, res) => {
-  // 🔹 Cabeceras para permitir iframe desde tu otra app
-  res.setHeader("X-Frame-Options", "ALLOWALL");
-  res.setHeader(
-    "Content-Security-Policy",
-    "frame-ancestors 'self' https://mac-os-classic.vercel.app"
-  );
-
+  // Solo POST permitido
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Método no permitido' });
     return;
   }
+
+  // Cabeceras para iframe (ojo, no usar X-Frame-Options: ALLOWALL porque no es válido)
+  res.removeHeader('X-Frame-Options');
+  res.setHeader(
+    'Content-Security-Policy',
+    "frame-ancestors 'self' https://mac-os-classic.vercel.app"
+  );
+
+  // Aquí tu lógica para el POST (ejemplo simple)
+  res.status(200).json({ message: 'POST recibido' });
+};
+
 
 
 
