@@ -1,5 +1,25 @@
+
+# Dependencias de Node.js
 node_modules/
+
+# Variables de entorno (no subir datos sensibles)
 .env
+
+# Archivos de historial local (pueden contener datos privados)
 historial.json
+
+# Archivos ocultos de macOS
 .DS_Store
+
+# Archivos de log
 *.log
+npm-debug.log*
+
+# Configuración de Vercel
+.vercel/
+
+# Configuración local personalizada
+*.local
+
+# Configuración de VSCode
+.vscode/

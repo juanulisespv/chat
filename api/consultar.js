@@ -5,7 +5,7 @@ const OpenAI = require('openai');
 const formidable = require('formidable');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const DEFAULT_URL = 'https://juanulisespv.github.io/CV/';
+const DEFAULT_URL = 'https://juanulisespv.github.io/cv-es/';
 
 // Helper para extraer texto de una URL
 async function getTextFromUrl(url) {
@@ -87,7 +87,7 @@ async function handleRequest(fields, files, res) {
     }
 
     // Construir prompt
-    let prompt = `Responde la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
+    let prompt = `Responde en primera persona a la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Habla sobre todo de temas profesionales. Usa un tono profesional, amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
 
     const completion = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
