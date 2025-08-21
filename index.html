@@ -77,7 +77,7 @@
       z-index: 10;
     }
     .mac-titlebar {
-      cursor: move;
+      cursor: default;
     }
     .mac-titlebar {
       background: linear-gradient(to bottom, #e0e0e0 80%, #b0b0b0 100%);
@@ -86,11 +86,47 @@
       display: flex;
       align-items: center;
       border-radius: 6px 6px 0 0;
+      position: relative;
     }
     .mac-titlebar .mac-buttons {
       display: flex;
       gap: 4px;
       margin-right: 10px;
+    }
+    /* Área de arrastre específica */
+    .mac-drag-handle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50px;
+      height: 100%;
+      cursor: move;
+      background: transparent;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .mac-drag-handle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .mac-drag-handle::before {
+      content: '';
+      width: 16px;
+      height: 10px;
+      background-image: 
+        linear-gradient(90deg, #555 0px, #555 15px, transparent 2px, transparent 15px),
+        linear-gradient(90deg, #555 0px, #555 15px, transparent 2px, transparent 15px),
+        linear-gradient(90deg, #555 0px, #555 15px, transparent 2px, transparent 15px),
+        linear-gradient(90deg, #555 0px, #555 15px, transparent 2px, transparent 15px);
+      background-size: 16px 1px;
+      background-position: 0 0, 0 3px, 0 6px, 0 9px;
+      background-repeat: repeat-x, repeat-x, repeat-x, repeat-x;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .mac-drag-handle:hover::before {
+      opacity: 1;
     }
     .mac-btn {
       width: 12px;
@@ -153,6 +189,26 @@
       margin-top: 12px;
       border-radius: 3px;
       box-shadow: 2px 2px 0 #888;
+    }
+    .mac-msg {
+      margin: 6px 0;
+      padding: 7px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      max-width: 90%;
+      box-shadow: 1px 1px 0 #bbb;
+    }
+    .mac-msg.user {
+      background: #e0e0e0;
+      border: 1px solid #888;
+      text-align: right;
+      margin-left: auto;
+    }
+    .mac-msg.assistant {
+      background: #e0e0e0;
+      border: 1px solid #888;
+      text-align: left;
+      margin-right: auto;
     }
   </style>
 </head>
@@ -275,8 +331,165 @@
       }
     });
   });
+  // Función para generar HTML del CV desde datos embebidos
+  async function generateCVContent() {
+    // Datos del CV embebidos directamente
+    const cvData = {
+      "nombre": "Juan Ulises Pérez Visairas",
+      "subtitulo": "Prólogo: Quién es este tipo y por qué debería importarte",
+      "prologo": "Soy Juan Ulises (mis amigos me dicen Uli, y espero que después de leer esto tú también), un vitoriano del 83 que ha decidido que la vida es demasiado corta para hacer solo una cosa bien. Profesionalmente soy programador full stack y esa rara especie que vive en la intersección entre el marketing, la comunicación y el desarrollo tecnológico.\n\nPersonalmente soy el típico que siempre está aprendiendo algo nuevo, entrenando para algo, o planeando el próximo viaje.\n\nMi filosofía es simple: si algo me da curiosidad, me meto de cabeza. Esto me ha llevado a trabajar desde Mercedes Benz hasta startups, de hacer campañas de marketing a programar webs, y de competir en triatlones a intentar no hacer el ridículo surfeando.",
+      "contacto": {
+        "ubicacion": "Vitoria, España (nacido en 1983)",
+        "email": "juanulisespv@gmail.com",
+        "disponibilidad": "Trabajo remoto preferido, disponible para viajar, licencia de conducir y coche propio"
+      },
+      "formacion": {
+        "titulo": "Capítulo 1: Los Años de Formación (o Cómo Acabé Siendo Esto)",
+        "descripcion": "Todo empezó con una Licenciatura en Publicidad y Relaciones Públicas en la Universidad Nebrija, porque pensaba que ser creativo era genial (y sigue siéndolo). Luego vino un MBA en Dirección de Marketing, Comunicación Empresarial y Ventas en ESDEN, porque alguien me dijo que también era importante entender de números.\n\nPero aquí viene la parte divertida: después de años trabajando en marketing digital, decidí que quería entender qué pasaba 'detrás del telón'. Así que me apunté a un FP2 en Desarrollo de Aplicaciones Web bilingüe en ICjardin. Fue duro, no voy a mentir, pero aprendí muchísimo y esa sensación de dominar algo completamente nuevo me enganchó.\n\nEl caso es que todavía me quedé con sed de conocimiento, ahora estoy cursando un Grado en Ingeniería Informática en EUNIV. Solo me quedan 120 créditos. Solo. Sí, a veces sufro entre algoritmos y estructuras de datos, pero cada concepto que entiendo me emociona como un niño en una tienda de caramelos. Es esa combinación de dolor y satisfacción que solo entienden los que han decidido estudiar programación después de los 30.",
+        "certificaciones": "Google Ads, Google Analytics, Marketing Internacional de Cambridge, y varias más que probablemente olvidaré mencionar en entrevistas importantes"
+      },
+      "experiencia": {
+        "titulo": "Capítulo 2: La Odisea Profesional (Con Más Plot Twists que una Serie de Netflix)",
+        "trabajos": [
+          {
+            "puesto": "Formador en E-commerce",
+            "empresa": "Cruz Roja",
+            "periodo": "Jun 2025",
+            "descripcion": "Acabo de terminar un curso de 100 horas sobre competencias digitales donde ayudé a gente a no tener miedo de internet y a vender cosas online sin que les saliera humo del ordenador. Fue muy gratificante ver cómo alguien pasa de '¿qué es un dominio?' a montar su tienda online. Un mes intenso, pero de esos que te recuerdan por qué me encanta la educación y enseñar lo que sé. Y no, no he cerrado esa puerta: la docencia tiene algo especial que me engancha."
+          },
+          {
+            "puesto": "Marketing Manager",
+            "empresa": "DAISALUX",
+            "periodo": "Oct 2016 – May 2025",
+            "descripcion": "Casi 9 años coordinando lanzamientos de producto, haciendo SEO (persiguiendo al señor Google), SEM (pagándole al señor Google), creando contenidos web, gestionando redes sociales, y siendo el intermediario entre el departamento de I+D y las agencias de marketing. Aquí aprendí que 'para ayer' es realmente una unidad de tiempo válida y que 'solo es un cambio pequeño' nunca, JAMÁS, es un cambio pequeño."
+          },
+          {
+            "puesto": "Project Manager",
+            "empresa": "EXPONENCIAL",
+            "periodo": "Mar 2012 – Sep 2016",
+            "descripcion": "Cuatro años desarrollando webs y ecommerce, diseñando contenido y asesorando en marketing. Esta época fue cuando descubrí que me gustaba tanto la parte técnica como la creativa. Era como ser traductor entre programadores y marketers, que básicamente hablan idiomas completamente diferentes."
+          },
+          {
+            "puesto": "Comunicación",
+            "empresa": "Mercedes Benz",
+            "periodo": "Ene 2011 – Ene 2012",
+            "descripcion": "Soporte en comunicación, diseño gráfico y eventos corporativos (y donde confirmé que los coches alemanes son tan precisos como dicen)."
+          },
+          {
+            "puesto": "Marketing y Ventas",
+            "empresa": "ABGAM",
+            "periodo": "Oct 2009 – Ene 2011",
+            "descripcion": "Marketing digital con Dassault Systèmes (donde descubrí que el software industrial también necesita marketing)."
+          },
+          {
+            "puesto": "Proyectos de comunicación",
+            "empresa": "PRISMAGLOBAL",
+            "periodo": "Mar 2008 – Jun 2009",
+            "descripcion": "Captación de leads y planes estratégicos (donde aprendí que no todos los leads son buenos leads)."
+          }
+        ]
+      },
+      "habilidades": {
+        "titulo": "Capítulo 3: Arsenal de Habilidades (o Mi Caja de Herramientas Digital)",
+        "lenguajes": "JavaScript, Python, PHP, SQL, HTML5, CSS3, React, Next.js, Node.js - mi stack completo de programador full stack. También trabajo con APIs de IA como OpenAI y Gemini, porque el futuro ya está aquí y hay que subirte al tren. Algunos mejor que otros, pero todos con cariño y capacidad tanto para frontend como backend.",
+        "plataformas": "WordPress, Prestashop, y prácticamente cualquier CMS que me pongas delante.",
+        "herramientas": "Marketing digital, IA, tecnologías emergentes, Canva, Office, Adobe Creative Suite. Soy de los que cree que la herramienta no hace al profesional, pero tener buenas herramientas ayuda bastante.",
+        "idiomas": "Español nativo, Inglés nivel C1 (confirmado tras prácticas universitarias en EE.UU. donde sobreviví pidiendo comida y entendiendo las clases)."
+      },
+      "personal": {
+        "titulo": "Capítulo 4: La Vida Fuera de la Pantalla",
+        "deportes": "Durante años fui triatleta. De esos que se levantan a las 6 AM para entrenar antes de trabajar y que piensan que 'más es mejor'. Hasta que mi cuerpo me enseñó que también tiene voz y voto en estas decisiones. Ahora soy más inteligente: entreno, corro, monto en bici, nado y surfeo, pero escuchando más al cuerpo y menos al ego. El running sigue siendo mi gran pasión deportiva - hay algo terapéutico en salir a correr que nunca me cansa. El surf me gusta y lo disfruto, pero seamos honestos: nada supera la sensación de una buena carrera, ya sea por montaña o por la playa.",
+        "musica": "Mi Spotify es un caos organizado: Queen para sentirme épico trabajando, Dire Straits para el flow profundo, Foo Fighters para el gym, jazz suave para relajar, y sí, flamenco fusión cuando mi lado español necesita combustible. Las bandas sonoras de películas son mi secreto para concentrarme: hacen que escribir código parezca salvar el mundo.",
+        "viajes": "Soy de los que disfrutan igual subiendo una montaña en Pirineos que tomándose un café en una terraza de Lisboa. Mi pareja y yo somos bastante activos viajando, aunque ella probablemente sea más rápida subiendo cuestas (dato que jamás admitiré públicamente). Mi checklist de viaje perfecto: naturaleza, buena comida local, posibilidad de hacer deporte, y conexión a internet decente por si surge algo de trabajo.",
+        "curiosidades": [
+          "Ex-bloguero: Mantuve un blog con más de 1000 seguidores donde escribía sobre marketing, tecnología y proyectos personales. Era mi forma de procesar lo que aprendía y ayudar a otros en situaciones similares. Ahora está en modo hibernación y los seguidores... bueno, quién sabe dónde estarán, pero fue una buena época de compartir conocimiento.",
+          "Chef de supervivencia: Cocino rápido y saludable, que es mi manera diplomática de decir que hago milagros con cuatro ingredientes y poco tiempo. Mis especialidades son 'fusión de lo que hay en la nevera' y 'pasta con lo que pillé en el mercado'.",
+          "Cazador de vinilos: Tengo un radar especial para encontrar joyas musicales en mercadillos. Es mi versión de la búsqueda del tesoro, solo que el tesoro suena bien.",
+          "Early adopter compulsivo: Pruebo apps y herramientas nuevas constantemente. Mi teléfono es un cementerio de apps que 'iban a revolucionar mi productividad'."
+        ]
+      },
+      "epilogo": {
+        "busco": "Proyectos donde pueda combinar creatividad y tecnología, donde el aprendizaje sea constante y donde el impacto sea real. Me motivan los equipos diversos, los retos complejos y las empresas que entienden que la innovación viene de conectar mundos aparentemente diferentes. También me apasiona la educación y la formación, así que siempre estoy abierto a oportunidades donde pueda enseñar y compartir conocimiento.",
+        "ofrezco": "Experiencia real, curiosidad infinita, esa rara habilidad de traducir entre departamentos que hablan idiomas diferentes, y una genuina pasión por educar y formar. Soy el tipo que puede explicar conceptos técnicos complejos a marketers, y estrategias de marketing a programadores, sin que nadie acabe frustrado.",
+        "garantia": "Humor incluido, curiosidad ilimitada, y un nivel de energía que se mantiene bastante bien sin necesidad de litros de café.",
+        "contacto_final": "P.D.: Si has llegado hasta aquí, probablemente tengamos cosas en común. Escríbeme y hablemos de proyectos, tecnología, marketing, deportes, música, o de cualquier cosa interesante que se te ocurra."
+      }
+    };
+    
+    // Generar HTML para la experiencia
+    const experienciaHTML = cvData.experiencia.trabajos.map(exp => 
+      `<li><b>${exp.puesto}, ${exp.empresa}</b> <span style="color:#888;">(${exp.periodo})</span><br><span style="color:#333;">${exp.descripcion}</span></li>`
+    ).join('');
+    
+    // Generar HTML para curiosidades
+    const curiosidadesHTML = cvData.personal.curiosidades.map(curiosidad => 
+      `<li>${curiosidad}</li>`
+    ).join('');
+    
+    return `<div style="padding:18px 24px; max-width: 800px; font-family: 'Geneva', Arial, sans-serif; font-size: 14px; line-height: 1.6; background: #f7f7f7; border-radius: 8px; box-shadow: 0 2px 8px #0001;">
+<div style="font-size:24px; font-weight:bold; margin-bottom:10px; color:#222; text-align:center;">${cvData.nombre}</div>
+
+<div style="margin-bottom:20px; padding:15px; background:#fff; border-radius:6px;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:8px;">${cvData.subtitulo}</div>
+<div style="color:#333; white-space:pre-line;">${cvData.prologo}</div>
+</div>
+
+<div style="margin-bottom:15px; padding:10px; background:#e8f4f8; border-radius:6px; border-left:4px solid #2196F3;">
+<strong>Contacto:</strong> ${cvData.contacto.email} | ${cvData.contacto.ubicacion}<br>
+<strong>Disponibilidad:</strong> ${cvData.contacto.disponibilidad}
+</div>
+
+<div style="margin-bottom:20px; padding:15px; background:#fff; border-radius:6px;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:8px;">${cvData.formacion.titulo}</div>
+<div style="color:#333; white-space:pre-line; margin-bottom:10px;">${cvData.formacion.descripcion}</div>
+<div style="color:#666; font-style:italic;">Certificaciones: ${cvData.formacion.certificaciones}</div>
+</div>
+
+<div style="margin-bottom:20px, padding:15px; background:#fff; border-radius:6px;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:10px;">${cvData.experiencia.titulo}</div>
+<ul style="margin:0; padding-left:20px;">
+${experienciaHTML}
+</ul>
+</div>
+
+<div style="margin-bottom:20px; padding:15px; background:#fff; border-radius:6px;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:8px;">${cvData.habilidades.titulo}</div>
+<div style="margin-bottom:8px;"><strong>Lenguajes:</strong> ${cvData.habilidades.lenguajes}</div>
+<div style="margin-bottom:8px;"><strong>Plataformas:</strong> ${cvData.habilidades.plataformas}</div>
+<div style="margin-bottom:8px;"><strong>Herramientas:</strong> ${cvData.habilidades.herramientas}</div>
+<div><strong>Idiomas:</strong> ${cvData.habilidades.idiomas}</div>
+</div>
+
+<div style="margin-bottom:20px; padding:15px; background:#fff; border-radius:6px;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:8px;">${cvData.personal.titulo}</div>
+<div style="margin-bottom:8px;"><strong>Deportes:</strong> ${cvData.personal.deportes}</div>
+<div style="margin-bottom:8px;"><strong>Música:</strong> ${cvData.personal.musica}</div>
+<div style="margin-bottom:10px;"><strong>Viajes:</strong> ${cvData.personal.viajes}</div>
+<div style="margin-bottom:8px;"><strong>Capítulo 5: Curiosidades y Manías</strong></div>
+<ul style="margin:0; padding-left:20px; font-size:13px;">
+${curiosidadesHTML}
+</ul>
+</div>
+
+<div style="padding:15px; background:#f0f8e8; border-radius:6px; border-left:4px solid #4CAF50;">
+<div style="font-size:16px; font-weight:bold; color:#444; margin-bottom:8px;">Epílogo: Qué Busco y Qué Ofrezco</div>
+<div style="margin-bottom:8px;"><strong>Busco:</strong> ${cvData.epilogo.busco}</div>
+<div style="margin-bottom:8px;"><strong>Ofrezco:</strong> ${cvData.epilogo.ofrezco}</div>
+<div style="margin-bottom:8px;"><strong>Garantía:</strong> ${cvData.epilogo.garantia}</div>
+<div style="font-style:italic; color:#666; margin-top:10px;">${cvData.epilogo.contacto_final}</div>
+</div>
+</div>`;
+  }
+
+  let topZIndex = 20; // z-index inicial para ventanas
+
+  function bringToFront(win) {
+    topZIndex++;
+    win.style.zIndex = topZIndex;
+  }
+
   // Abrir ventanas simuladas
-  window.openWindow = function(type) {
+  window.openWindow = async function(type) {
     // No ocultar ninguna ventana, solo abrir la nueva o mostrar la existente
     if (type === 'chat') {
       document.getElementById('chat-window').style.display = 'block';
@@ -298,57 +511,7 @@
       let content = '';
   if (type === 'cv') {
     title = 'CV';
-  content = `<div style="padding:18px 24px; max-width: 750px; font-family: 'Geneva', Arial, sans-serif; font-size: 15px; line-height: 1.7; background: #f7f7f7; border-radius: 8px; box-shadow: 0 2px 8px #0001;">
-<div style="font-size:22px; font-weight:bold; margin-bottom:2px; color:#222;">Juan Ulises Pérez Visairas</div>
-<div style="font-size:16px; color:#555; margin-bottom:8px;">Profesional en marketing, comunicación y desarrollo tecnológico</div>
-<div style="font-size:13px; color:#666; margin-bottom:18px;">Florida 17 2ºD. 01005. Vitoria, Spain · (+34) 693 80 50 23 · juanulisespv@gmail.com</div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Perfil</span><br>
-<span style="color:#333;">Profesional creativo con sólida experiencia en marketing y estrategia digital, actualmente enfocado en el desarrollo tecnológico. Apasionado por aprender, construir y colaborar. Busco contribuir en entornos donde la innovación, la comunicación y la tecnología se encuentran para generar un impacto real.</span></div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Experiencia</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li><b>Formador en E-commerce, Cruz Roja</b> <span style="color:#888;">(Jun 2025)</span><br><span style="color:#333;">Curso de 100h sobre competencias digitales. Diseño de materiales, seguimiento del alumnado y evaluación.</span></li>
-<li><b>Marketing Manager, DAISALUX</b> <span style="color:#888;">(Oct 2016 – May 2025)</span><br><span style="color:#333;">Lanzamientos de producto, SEO, SEM, contenidos web, RRSS, gestión de proyectos con agencia y coordinación con I+D.</span></li>
-<li><b>Project Manager, EXPONENCIAL</b> <span style="color:#888;">(Mar 2012 – Sep 2016)</span><br><span style="color:#333;">Desarrollo de webs y ecommerce, diseño de contenido y asesoramiento en marketing.</span></li>
-<li><b>Comunicación, MERCEDES BENZ</b> <span style="color:#888;">(Ene 2011 – Ene 2012)</span><br><span style="color:#333;">Soporte en comunicación, diseño gráfico y eventos corporativos.</span></li>
-<li><b>Marketing y Ventas, ABGAM</b> <span style="color:#888;">(Oct 2009 – Ene 2011)</span><br><span style="color:#333;">Marketing digital y campañas con Dassault Systèmes.</span></li>
-<li><b>Proyectos de comunicación, PRISMAGLOBAL</b> <span style="color:#888;">(Mar 2008 – Jun 2009)</span><br><span style="color:#333;">Captación de leads y planes estratégicos de marketing.</span></li>
-</ul></div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Educación</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li>Grado en Ingeniería Informática – EUNIV <span style="color:#888;">(en curso, 120 créditos restantes)</span></li>
-<li>Licenciatura en Publicidad y Relaciones Públicas – Universidad Nebrija</li>
-<li>MBA en Marketing, Comunicación y Ventas – ESDEN</li>
-<li>FP2 Desarrollo de Aplicaciones Web (Bilingüe) – ICjardin</li>
-<li>Máster en Creatividad Publicitaria – Aula Creactiva</li>
-</ul></div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Certificaciones</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li>Google Ads y Google Analytics</li>
-<li>Marketing y Comercio Internacional – IE</li>
-<li>Marketing Internacional – Cambridge</li>
-<li>Marketing Digital y Ecommerce – CETIC</li>
-<li>Diseño Gráfico y Web – Trazos</li>
-</ul></div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Habilidades Técnicas</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li>JavaScript, Python, PHP, SQL, HTML5, CSS3</li>
-<li>WordPress, Prestashop</li>
-<li>Marketing digital, IA, tecnologías emergentes</li>
-<li>Canva, Office, Adobe Creative Suite</li>
-</ul></div>
-
-<div style="margin-bottom:16px;"><span style="font-weight:bold; color:#222;">Idiomas</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li>Español: Nativo</li>
-<li>Inglés: Nivel C1 (prácticas universitarias en EE.UU.)</li>
-</ul></div>
-
-<div style="margin-bottom:8px;"><span style="font-weight:bold; color:#222;">Información Adicional</span><ul style="margin:6px 0 0 18px; padding:0;">
-<li>Interesado en trabajo remoto</li>
-<li>Disponible para viajar</li>
-<li>Licencia de conducir y coche propio</li>
-</ul></div>
-</div>`;
+    content = await generateCVContent();
   } else if (type === 'proyectos') {
         title = 'Proyectos';
         content = '<div style="padding:16px;">Aquí se mostrarán los proyectos.<br><br><a href="https://github.com/juanulisespv" target="_blank">Ver proyectos en GitHub</a></div>';
@@ -368,6 +531,7 @@
         <div class="mac-content">${content}</div>
       `;
       document.body.appendChild(win);
+      bringToFront(win);
       // Añadir funcionalidad a los botones de la ventana nueva
       const closeBtn = win.querySelector('.mac-btn.close');
       const maxBtn = win.querySelector('.mac-btn.max');
@@ -437,6 +601,7 @@
       makeWindowDraggable(win);
     }
     win.style.display = 'block';
+    bringToFront(win);
   };
   // Mostrar ventana de chat al inicio
   window.addEventListener('DOMContentLoaded', function() {
@@ -447,32 +612,92 @@
   function makeWindowDraggable(win) {
     const bar = win.querySelector('.mac-titlebar');
     if (!bar) return;
-    let isDragging = false, startX = 0, startY = 0, startLeft = 0, startTop = 0;
-    bar.addEventListener('mousedown', function(e) {
+    
+    // Crear área de arrastre específica
+    let dragHandle = bar.querySelector('.mac-drag-handle');
+    if (!dragHandle) {
+      dragHandle = document.createElement('div');
+      dragHandle.className = 'mac-drag-handle';
+      dragHandle.title = 'Arrastrar ventana';
+      bar.appendChild(dragHandle);
+    }
+    
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startWinX = 0, startWinY = 0;
+    
+    function startDrag(e) {
       isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
+      
+      // Obtener coordenadas del mouse o toque
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      startX = clientX;
+      startY = clientY;
+      
+      // Obtener posición real de la ventana
       const rect = win.getBoundingClientRect();
-      startLeft = rect.left;
-      startTop = rect.top;
+      startWinX = rect.left;
+      startWinY = rect.top;
+      
+      win.style.transform = 'none';
       document.body.style.userSelect = 'none';
-    });
-    document.addEventListener('mousemove', function(e) {
+      document.body.style.cursor = 'move';
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    function doDrag(e) {
       if (!isDragging) return;
-      let dx = e.clientX - startX;
-      let dy = e.clientY - startY;
-      win.style.left = (startLeft + dx) + 'px';
-      win.style.top = (startTop + dy) + 'px';
-      win.style.transform = '';
+      
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
+      
+      win.style.left = (startWinX + deltaX) + 'px';
+      win.style.top = (startWinY + deltaY) + 'px';
+      e.preventDefault();
+    }
+    
+    function endDrag() {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+      }
+    }
+    
+    // Eventos para mouse
+    dragHandle.addEventListener('mousedown', function() {
+      bringToFront(win);
     });
-    document.addEventListener('mouseup', function() {
-      isDragging = false;
-      document.body.style.userSelect = '';
+    dragHandle.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', doDrag);
+    document.addEventListener('mouseup', endDrag);
+    
+    // Eventos para táctil
+    dragHandle.addEventListener('touchstart', function() {
+      bringToFront(win);
     });
+    dragHandle.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('touchmove', doDrag, { passive: false });
+    document.addEventListener('touchend', endDrag);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.mac-window').forEach(makeWindowDraggable);
+    document.querySelectorAll('.mac-window').forEach(win => {
+      makeWindowDraggable(win);
+      // Llevar al frente al hacer clic/tap en cualquier parte de la ventana, siempre
+      win.addEventListener('mousedown', function() {
+        bringToFront(win);
+      }, true);
+      win.addEventListener('touchstart', function() {
+        bringToFront(win);
+      }, true);
+    });
   });
 
   // Chat clásico Mac OS
@@ -513,32 +738,6 @@
     chatContainer.appendChild(msgDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-
-  // Estilos para los mensajes
-  const style = document.createElement('style');
-  style.textContent = `
-    .mac-msg {
-      margin: 6px 0;
-      padding: 7px 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      max-width: 90%;
-      box-shadow: 1px 1px 0 #bbb;
-    }
-    .mac-msg.user {
-      background: #e0e0e0;
-      border: 1px solid #888;
-      text-align: right;
-      margin-left: auto;
-    }
-    .mac-msg.assistant {
-      background: #e0e0e0;
-      border: 1px solid #888;
-      text-align: left;
-      margin-right: auto;
-    }
-  `;
-  document.head.appendChild(style);
   </script>
 </body>
 </html>
