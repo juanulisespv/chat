@@ -7,6 +7,101 @@ const formidable = require('formidable');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const DEFAULT_URL = 'https://juanulisespv.github.io/cv-es/';
 
+// Función para cargar conversación desde almacenamiento externo
+async function loadConversation(sessionId) {
+  try {
+    // Upstash Redis
+    const { Redis } = require('@upstash/redis');
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+    
+    return await redis.get(`conversation:${sessionId}`);
+    
+  } catch (error) {
+    console.log('No se pudo cargar conversación:', sessionId, error.message);
+    return null;
+  }
+}
+
+// Función para guardar conversación en almacenamiento externo
+async function saveConversationToExternal(sessionId, conversationData) {
+  try {
+    // Upstash Redis
+    const { Redis } = require('@upstash/redis');
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+    
+    await redis.set(`conversation:${sessionId}`, conversationData);
+    
+    // También mantener un índice de todas las conversaciones
+    await redis.sadd('conversation_sessions', sessionId);
+    
+    // Log para debug
+    console.log('💾 [UPSTASH REDIS] Conversación guardada:', {
+      sessionId,
+      timestamp: new Date().toISOString(),
+      totalMessages: conversationData.messages.length,
+      lastActivity: new Date(conversationData.lastActivity).toISOString()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error guardando conversación en Redis:', error.message);
+    
+    // Fallback: registrar en logs
+    console.log('💾 [VERCEL LOG] Conversación (fallback):', {
+      sessionId,
+      timestamp: new Date().toISOString(),
+      totalMessages: conversationData.messages.length,
+      lastActivity: new Date(conversationData.lastActivity).toISOString(),
+      messages: conversationData.messages.map(m => ({ 
+        role: m.role, 
+        content: m.content.substring(0, 100),
+        timestamp: m.timestamp 
+      }))
+    });
+    
+    return false;
+  }
+}
+
+// Guardar conversaciones en archivo
+function saveConversations() {
+  try {
+    const conversationsObj = Object.fromEntries(conversations);
+    fs.writeFileSync(CONVERSATIONS_FILE, JSON.stringify(conversationsObj, null, 2));
+  } catch (error) {
+    console.error('Error guardando conversaciones:', error.message);
+  }
+}
+
+// Cargar conversaciones al iniciar
+loadConversations();
+
+// Guardar conversaciones cada 2 minutos
+setInterval(saveConversations, 2 * 60 * 1000);
+
+// Limpiar conversaciones viejas cada 30 minutos
+setInterval(() => {
+  const now = Date.now();
+  let hasChanges = false;
+  
+  for (const [sessionId, data] of conversations.entries()) {
+    if (now - data.lastActivity > 24 * 60 * 60 * 1000) { // 24 horas
+      conversations.delete(sessionId);
+      hasChanges = true;
+    }
+  }
+  
+  if (hasChanges) {
+    saveConversations();
+  }
+}, 30 * 60 * 1000);
+
 // Helper para extraer texto de una URL
 async function getTextFromUrl(url) {
   const response = await axios.get(url);
@@ -55,6 +150,7 @@ module.exports = async (req, res) => {
 async function handleRequest(fields, files, res) {
   try {
     const pregunta = fields.pregunta || '';
+    const sessionId = fields.sessionId || 'default-session';
     const url = fields.url || '';
     let pdfBuffer = null;
     if (files.pdf && files.pdf.filepath) {
@@ -67,27 +163,97 @@ async function handleRequest(fields, files, res) {
       return;
     }
 
+    // Comando especial para limpiar la sesión
+    if (pregunta === '__CLEAR_SESSION__') {
+      // En Vercel serverless, no hay estado persistente en memoria
+      // El "limpiar" se maneja simplemente no cargando conversación anterior
+      res.status(200).json({ respuesta: 'Sesión limpiada' });
+      return;
+    }
+
+    // Intentar cargar conversación existente desde almacenamiento externo
+    let conversation = await loadConversation(sessionId);
+    
+    // Si no existe o si es una sesión nueva, crear nueva conversación
+    if (!conversation) {
+      conversation = {
+        sessionId,
+        messages: [],
+        lastActivity: Date.now(),
+        createdAt: Date.now(),
+        contextText: '',
+        userAgent: req.headers['user-agent'] || 'unknown',
+        totalInteractions: 0
+      };
+    }
+    
+    // Actualizar metadatos
+    conversation.lastActivity = Date.now();
+    conversation.totalInteractions = (conversation.totalInteractions || 0) + 1;
+
     let texto = '';
     if (url) {
       try {
         texto = await getTextFromUrl(url);
+        conversation.contextText = texto; // Actualizar contexto si hay nueva URL
       } catch {
         res.status(400).json({ error: 'No se pudo obtener el texto de la URL.' });
         return;
       }
     } else if (pdfBuffer) {
       texto = await getTextFromPdf(pdfBuffer);
+      conversation.contextText = texto; // Actualizar contexto si hay nuevo PDF
     } else {
-      try {
-        texto = await getTextFromUrl(DEFAULT_URL);
-      } catch {
-        res.status(400).json({ error: 'No se pudo obtener el texto de la URL por defecto.' });
-        return;
+      // Usar contexto existente o cargar el por defecto
+      if (conversation.contextText) {
+        texto = conversation.contextText;
+      } else {
+        try {
+          texto = await getTextFromUrl(DEFAULT_URL);
+          conversation.contextText = texto;
+        } catch {
+          res.status(400).json({ error: 'No se pudo obtener el texto de la URL por defecto.' });
+          return;
+        }
       }
     }
 
-    // Construir prompt
-    let prompt = `Responde en primera persona a la siguiente pregunta usando la información del texto extraído del PDF o de la web proporcionada. La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario. Habla sobre todo de temas profesionales. Usa un tono profesional, amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible.\n\nTexto:\n${texto}\n\nPregunta: ${pregunta}\nRespuesta:`;
+    // Agregar la pregunta del usuario al historial
+    conversation.messages.push({
+      role: 'user',
+      content: pregunta,
+      timestamp: Date.now()
+    });
+
+    // Construir el historial para el prompt
+    let historialTexto = '';
+    if (conversation.messages.length > 1) {
+      // Tomar las últimas 8 interacciones para no hacer el prompt demasiado largo
+      const recentMessages = conversation.messages.slice(-8);
+      historialTexto = '\n\nHistorial de conversación reciente:\n';
+      for (let i = 0; i < recentMessages.length - 1; i += 2) {
+        if (recentMessages[i] && recentMessages[i + 1]) {
+          historialTexto += `Usuario: ${recentMessages[i].content}\n`;
+          historialTexto += `Uli: ${recentMessages[i + 1].content}\n`;
+        }
+      }
+      historialTexto += '\n';
+    }
+
+    // Construir prompt con memoria
+    let prompt = `Eres Juan Ulises (Uli), un programador full stack y experto en marketing de Vitoria. Responde en primera persona usando la información del texto extraído y mantén coherencia con el historial de conversación previo. 
+
+IMPORTANTE: 
+- Recuerda lo que se ha hablado antes en esta conversación
+- Si el usuario hace referencia a algo mencionado anteriormente, reconócelo
+- Mantén un tono consistente y natural como si fuera una conversación continua
+- La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario
+- Usa un tono profesional, amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible
+
+Información de referencia sobre Uli:
+${texto}${historialTexto}
+Pregunta actual: ${pregunta}
+Respuesta de Uli:`;
 
     const completion = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
@@ -96,6 +262,16 @@ async function handleRequest(fields, files, res) {
       temperature: 0.7,
     });
     const respuesta = completion.choices[0].text.trim();
+
+    // Agregar la respuesta al historial
+    conversation.messages.push({
+      role: 'assistant',
+      content: respuesta,
+      timestamp: Date.now()
+    });
+
+    // Guardar conversación actualizada inmediatamente después de cada mensaje
+    await saveConversationToExternal(sessionId, conversation);
 
     res.status(200).json({ respuesta });
   } catch (err) {

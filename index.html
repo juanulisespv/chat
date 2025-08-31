@@ -210,6 +210,13 @@
       text-align: left;
       margin-right: auto;
     }
+    .mac-msg.typing {
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -247,6 +254,7 @@
       <form id="chatForm" style="margin-top:14px; display:flex; gap:8px;">
         <input type="text" id="chatInput" class="mac-input" placeholder="Escribe tu pregunta..." style="flex:1;">
         <button type="submit" class="mac-btn-main">Enviar</button>
+        <button type="button" id="clearChat" class="mac-btn-main" style="background:#ff6b6b;">Limpiar</button>
       </form>
     </div>
   </div>
@@ -461,7 +469,7 @@ ${experienciaHTML}
 <div style="margin-bottom:8px;"><strong>Deportes:</strong> ${cvData.personal.deportes}</div>
 <div style="margin-bottom:8px;"><strong>Música:</strong> ${cvData.personal.musica}</div>
 <div style="margin-bottom:10px;"><strong>Viajes:</strong> ${cvData.personal.viajes}</div>
-<div style="margin-bottom:8px;"><strong>Capítulo 5: Curiosidades y Manías</strong></div>
+<div style="margin-bottom:8px;"><strong>Curiosidades y Manías</strong></div>
 <ul style="margin:0; padding-left:20px; font-size:13px;">
 ${curiosidadesHTML}
 </ul>
@@ -701,6 +709,9 @@ ${curiosidadesHTML}
   const chatInput = document.getElementById('chatInput');
   const chatContainer = document.getElementById('chatContainer');
 
+  // Generar un sessionId único para esta sesión de chat
+  const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
   // Mensaje inicial
   window.addEventListener('DOMContentLoaded', function() {
     addMessage('assistant', 'Hola, Soy Uli, experto en Marketing y Desarrollo Tecnológico, ¿cómo puedo ayudarte?');
@@ -713,17 +724,37 @@ ${curiosidadesHTML}
     chatInput.value = '';
     // Mostrar pregunta en el chat
     addMessage('user', pregunta);
-    // Enviar pregunta al backend
-    const res = await fetch('/api/consultar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pregunta })
-    });
-    const data = await res.json();
-    if (data.respuesta) {
-      addMessage('assistant', data.respuesta);
-    } else {
-      addMessage('assistant', 'Error: No se obtuvo respuesta.');
+    
+    // Mostrar indicador de "escribiendo..."
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'mac-msg assistant typing';
+    typingDiv.textContent = 'Uli está escribiendo...';
+    typingDiv.style.fontStyle = 'italic';
+    typingDiv.style.opacity = '0.7';
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    try {
+      // Enviar pregunta al backend con sessionId
+      const res = await fetch('/api/consultar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta, sessionId })
+      });
+      const data = await res.json();
+      
+      // Remover indicador de "escribiendo..."
+      chatContainer.removeChild(typingDiv);
+      
+      if (data.respuesta) {
+        addMessage('assistant', data.respuesta);
+      } else {
+        addMessage('assistant', 'Error: No se obtuvo respuesta.');
+      }
+    } catch (error) {
+      // Remover indicador de "escribiendo..."
+      chatContainer.removeChild(typingDiv);
+      addMessage('assistant', 'Error: No se pudo conectar con el servidor.');
     }
   });
 
@@ -734,6 +765,22 @@ ${curiosidadesHTML}
     chatContainer.appendChild(msgDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
+
+  // Funcionalidad para limpiar el chat
+  document.getElementById('clearChat').addEventListener('click', function() {
+    if (confirm('¿Estás seguro de que quieres limpiar la conversación? Se perderá toda la memoria del chat.')) {
+      chatContainer.innerHTML = '';
+      // Reiniciar con mensaje inicial
+      addMessage('assistant', 'Hola, Soy Uli, experto en Marketing y Desarrollo Tecnológico, ¿cómo puedo ayudarte?');
+      
+      // Limpiar la memoria del servidor enviando una petición especial
+      fetch('/api/consultar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pregunta: '__CLEAR_SESSION__', sessionId })
+      }).catch(() => {}); // Ignorar errores en la limpieza
+    }
+  });
   </script>
 </body>
 </html>

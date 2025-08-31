@@ -1,9 +1,14 @@
 
+# Archivos de conversaciones (contienen datos personales)
+conversaciones.json
+conversaciones_backup.json
+
 # Dependencias de Node.js
 node_modules/
 
 # Variables de entorno (no subir datos sensibles)
 .env
+.env.local
 
 # Archivos de historial local (pueden contener datos privados)
 historial.json
