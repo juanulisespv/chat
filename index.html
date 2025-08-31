@@ -254,7 +254,6 @@
       <form id="chatForm" style="margin-top:14px; display:flex; gap:8px;">
         <input type="text" id="chatInput" class="mac-input" placeholder="Escribe tu pregunta..." style="flex:1;">
         <button type="submit" class="mac-btn-main">Enviar</button>
-        <button type="button" id="clearChat" class="mac-btn-main" style="background:#ff6b6b;">Limpiar</button>
       </form>
     </div>
   </div>
@@ -765,22 +764,6 @@ ${curiosidadesHTML}
     chatContainer.appendChild(msgDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
-
-  // Funcionalidad para limpiar el chat
-  document.getElementById('clearChat').addEventListener('click', function() {
-    if (confirm('¿Estás seguro de que quieres limpiar la conversación? Se perderá toda la memoria del chat.')) {
-      chatContainer.innerHTML = '';
-      // Reiniciar con mensaje inicial
-      addMessage('assistant', 'Hola, Soy Uli, experto en Marketing y Desarrollo Tecnológico, ¿cómo puedo ayudarte?');
-      
-      // Limpiar la memoria del servidor enviando una petición especial
-      fetch('/api/consultar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pregunta: '__CLEAR_SESSION__', sessionId })
-      }).catch(() => {}); // Ignorar errores en la limpieza
-    }
-  });
   </script>
 </body>
 </html>

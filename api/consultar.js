@@ -7,9 +7,18 @@ const formidable = require('formidable');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const DEFAULT_URL = 'https://juanulisespv.github.io/cv-es/';
 
+// Cache temporal en memoria (para desarrollo sin Redis)
+const tempCache = new Map();
+
 // Función para cargar conversación desde almacenamiento externo
 async function loadConversation(sessionId) {
   try {
+    // Verificar si las variables de entorno están configuradas
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      console.log('Redis no configurado, usando cache temporal');
+      return tempCache.get(sessionId) || null;
+    }
+
     // Upstash Redis
     const { Redis } = require('@upstash/redis');
     const redis = new Redis({
@@ -20,14 +29,29 @@ async function loadConversation(sessionId) {
     return await redis.get(`conversation:${sessionId}`);
     
   } catch (error) {
-    console.log('No se pudo cargar conversación:', sessionId, error.message);
-    return null;
+    console.log('Error cargando de Redis, usando cache temporal:', error.message);
+    return tempCache.get(sessionId) || null;
   }
 }
 
 // Función para guardar conversación en almacenamiento externo
 async function saveConversationToExternal(sessionId, conversationData) {
   try {
+    // Verificar si las variables de entorno están configuradas
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+      // Guardar en cache temporal
+      tempCache.set(sessionId, conversationData);
+      
+      console.log('💾 [CACHE TEMPORAL] Conversación guardada:', {
+        sessionId,
+        timestamp: new Date().toISOString(),
+        totalMessages: conversationData.messages.length,
+        lastActivity: new Date(conversationData.lastActivity).toISOString(),
+        ultimoMensaje: conversationData.messages[conversationData.messages.length - 1]?.content || 'N/A'
+      });
+      return true;
+    }
+
     // Upstash Redis
     const { Redis } = require('@upstash/redis');
     const redis = new Redis({
@@ -50,22 +74,22 @@ async function saveConversationToExternal(sessionId, conversationData) {
     
     return true;
   } catch (error) {
-    console.error('Error guardando conversación en Redis:', error.message);
+    console.error('Error guardando en Redis, usando fallback:', error.message);
     
-    // Fallback: registrar en logs
-    console.log('💾 [VERCEL LOG] Conversación (fallback):', {
+    // Fallback: guardar en cache temporal
+    tempCache.set(sessionId, conversationData);
+    
+    // Registrar en logs con más detalle
+    console.log('💾 [FALLBACK] Conversación guardada:', {
       sessionId,
       timestamp: new Date().toISOString(),
       totalMessages: conversationData.messages.length,
       lastActivity: new Date(conversationData.lastActivity).toISOString(),
-      messages: conversationData.messages.map(m => ({ 
-        role: m.role, 
-        content: m.content.substring(0, 100),
-        timestamp: m.timestamp 
-      }))
+      ultimoMensajeUsuario: conversationData.messages.filter(m => m.role === 'user').pop()?.content || 'N/A',
+      ultimaRespuesta: conversationData.messages.filter(m => m.role === 'assistant').pop()?.content || 'N/A'
     });
     
-    return false;
+    return true; // Consideramos exitoso el fallback
   }
 }
 
@@ -160,14 +184,6 @@ async function handleRequest(fields, files, res) {
 
     if (!pregunta) {
       res.status(400).json({ error: 'Falta la pregunta.' });
-      return;
-    }
-
-    // Comando especial para limpiar la sesión
-    if (pregunta === '__CLEAR_SESSION__') {
-      // En Vercel serverless, no hay estado persistente en memoria
-      // El "limpiar" se maneja simplemente no cargando conversación anterior
-      res.status(200).json({ respuesta: 'Sesión limpiada' });
       return;
     }
 
@@ -271,7 +287,12 @@ Respuesta de Uli:`;
     });
 
     // Guardar conversación actualizada inmediatamente después de cada mensaje
-    await saveConversationToExternal(sessionId, conversation);
+    try {
+      await saveConversationToExternal(sessionId, conversation);
+    } catch (saveError) {
+      // No fallar la respuesta si hay error guardando
+      console.error('Error guardando, pero continuando:', saveError.message);
+    }
 
     res.status(200).json({ respuesta });
   } catch (err) {
