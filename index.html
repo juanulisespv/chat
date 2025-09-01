@@ -737,6 +737,23 @@ ${curiosidadesHTML}
       });
       const data = await res.json();
       
+      // 🔍 MOSTRAR PROMPT EN CONSOLA DEL NAVEGADOR PARA REFINAMIENTO
+      if (data.debug) {
+        console.log('\n' + '='.repeat(80));
+        console.log('🤖 PROMPT ENVIADO A OPENAI:');
+        console.log('='.repeat(80));
+        console.log(data.debug.prompt);
+        console.log('='.repeat(80));
+        console.log('📊 ESTADÍSTICAS DEL PROMPT:');
+        console.log(`- Caracteres: ${data.debug.promptLength}`);
+        console.log(`- SessionId: ${data.debug.sessionId}`);
+        console.log(`- Total mensajes: ${data.debug.totalMessages}`);
+        console.log(`- Temperatura: ${data.debug.temperature}`);
+        console.log(`- Max tokens: ${data.debug.maxTokens}`);
+        console.log(`- Modelo: ${data.debug.model}`);
+        console.log('='.repeat(80) + '\n');
+      }
+      
       // Remover indicador de "escribiendo..."
       chatContainer.removeChild(typingDiv);
       

@@ -290,7 +290,19 @@ Respuesta de Uli:`;
       console.error('Error guardando, pero continuando:', saveError.message);
     }
 
-    res.status(200).json({ respuesta });
+    res.status(200).json({ 
+      respuesta,
+      // 🔍 AÑADIR PROMPT PARA VER EN CONSOLA DEL NAVEGADOR
+      debug: {
+        prompt: prompt,
+        promptLength: prompt.length,
+        sessionId: sessionId,
+        totalMessages: conversation.messages.length,
+        temperature: 0.7,
+        maxTokens: 512,
+        model: 'gpt-3.5-turbo-instruct'
+      }
+    });
   } catch (err) {
     console.error('Error en /api/consultar:', err);
     let errorMsg = 'Error procesando la consulta: ' + err.message;
