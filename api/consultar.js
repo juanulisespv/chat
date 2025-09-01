@@ -4,7 +4,14 @@ const pdfParse = require('pdf-parse');
 const OpenAI = require('openai');
 const formidable = require('formidable');
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Verificar que la API key de OpenAI esté configurada
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+} else {
+  console.error('❌ OPENAI_API_KEY no está configurada');
+}
+
 const DEFAULT_URL = 'https://juanulisespv.github.io/cv-es/';
 
 // Cache temporal en memoria (para desarrollo sin Redis)
@@ -15,7 +22,6 @@ async function loadConversation(sessionId) {
   try {
     // Verificar si las variables de entorno están configuradas
     if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
-      console.log('Redis no configurado, usando cache temporal');
       return tempCache.get(sessionId) || null;
     }
 
@@ -46,8 +52,7 @@ async function saveConversationToExternal(sessionId, conversationData) {
         sessionId,
         timestamp: new Date().toISOString(),
         totalMessages: conversationData.messages.length,
-        lastActivity: new Date(conversationData.lastActivity).toISOString(),
-        ultimoMensaje: conversationData.messages[conversationData.messages.length - 1]?.content || 'N/A'
+        ultimoMensaje: conversationData.messages[conversationData.messages.length - 1]?.content?.substring(0, 50) || 'N/A'
       });
       return true;
     }
@@ -60,71 +65,21 @@ async function saveConversationToExternal(sessionId, conversationData) {
     });
     
     await redis.set(`conversation:${sessionId}`, conversationData);
-    
-    // También mantener un índice de todas las conversaciones
     await redis.sadd('conversation_sessions', sessionId);
     
-    // Log para debug
     console.log('💾 [UPSTASH REDIS] Conversación guardada:', {
       sessionId,
       timestamp: new Date().toISOString(),
-      totalMessages: conversationData.messages.length,
-      lastActivity: new Date(conversationData.lastActivity).toISOString()
+      totalMessages: conversationData.messages.length
     });
     
     return true;
   } catch (error) {
     console.error('Error guardando en Redis, usando fallback:', error.message);
-    
-    // Fallback: guardar en cache temporal
     tempCache.set(sessionId, conversationData);
-    
-    // Registrar en logs con más detalle
-    console.log('💾 [FALLBACK] Conversación guardada:', {
-      sessionId,
-      timestamp: new Date().toISOString(),
-      totalMessages: conversationData.messages.length,
-      lastActivity: new Date(conversationData.lastActivity).toISOString(),
-      ultimoMensajeUsuario: conversationData.messages.filter(m => m.role === 'user').pop()?.content || 'N/A',
-      ultimaRespuesta: conversationData.messages.filter(m => m.role === 'assistant').pop()?.content || 'N/A'
-    });
-    
-    return true; // Consideramos exitoso el fallback
+    return true;
   }
 }
-
-// Guardar conversaciones en archivo
-function saveConversations() {
-  try {
-    const conversationsObj = Object.fromEntries(conversations);
-    fs.writeFileSync(CONVERSATIONS_FILE, JSON.stringify(conversationsObj, null, 2));
-  } catch (error) {
-    console.error('Error guardando conversaciones:', error.message);
-  }
-}
-
-// Cargar conversaciones al iniciar
-loadConversations();
-
-// Guardar conversaciones cada 2 minutos
-setInterval(saveConversations, 2 * 60 * 1000);
-
-// Limpiar conversaciones viejas cada 30 minutos
-setInterval(() => {
-  const now = Date.now();
-  let hasChanges = false;
-  
-  for (const [sessionId, data] of conversations.entries()) {
-    if (now - data.lastActivity > 24 * 60 * 60 * 1000) { // 24 horas
-      conversations.delete(sessionId);
-      hasChanges = true;
-    }
-  }
-  
-  if (hasChanges) {
-    saveConversations();
-  }
-}, 30 * 60 * 1000);
 
 // Helper para extraer texto de una URL
 async function getTextFromUrl(url) {
@@ -140,6 +95,16 @@ async function getTextFromPdf(buffer) {
 }
 
 module.exports = async (req, res) => {
+  // Configurar CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Método no permitido' });
     return;
@@ -165,7 +130,10 @@ module.exports = async (req, res) => {
       let data = {};
       try {
         data = JSON.parse(body);
-      } catch {}
+      } catch (parseError) {
+        res.status(400).json({ error: 'Error parseando JSON: ' + parseError.message });
+        return;
+      }
       await handleRequest(data, {}, res);
     });
   }
@@ -187,10 +155,16 @@ async function handleRequest(fields, files, res) {
       return;
     }
 
-    // Intentar cargar conversación existente desde almacenamiento externo
+    // Verificar que OpenAI esté configurado
+    if (!openai || !process.env.OPENAI_API_KEY) {
+      res.status(500).json({ error: 'OpenAI API Key no configurada en el servidor' });
+      return;
+    }
+
+    // Intentar cargar conversación existente
     let conversation = await loadConversation(sessionId);
     
-    // Si no existe o si es una sesión nueva, crear nueva conversación
+    // Si no existe, crear nueva conversación
     if (!conversation) {
       conversation = {
         sessionId,
@@ -211,16 +185,15 @@ async function handleRequest(fields, files, res) {
     if (url) {
       try {
         texto = await getTextFromUrl(url);
-        conversation.contextText = texto; // Actualizar contexto si hay nueva URL
+        conversation.contextText = texto;
       } catch {
         res.status(400).json({ error: 'No se pudo obtener el texto de la URL.' });
         return;
       }
     } else if (pdfBuffer) {
       texto = await getTextFromPdf(pdfBuffer);
-      conversation.contextText = texto; // Actualizar contexto si hay nuevo PDF
+      conversation.contextText = texto;
     } else {
-      // Usar contexto existente o cargar el por defecto
       if (conversation.contextText) {
         texto = conversation.contextText;
       } else {
@@ -244,7 +217,6 @@ async function handleRequest(fields, files, res) {
     // Construir el historial para el prompt
     let historialTexto = '';
     if (conversation.messages.length > 1) {
-      // Tomar las últimas 8 interacciones para no hacer el prompt demasiado largo
       const recentMessages = conversation.messages.slice(-8);
       historialTexto = '\n\nHistorial de conversación reciente:\n';
       for (let i = 0; i < recentMessages.length - 1; i += 2) {
@@ -259,12 +231,12 @@ async function handleRequest(fields, files, res) {
     // Construir prompt con memoria
     let prompt = `Eres Juan Ulises (Uli), un programador full stack y experto en marketing de Vitoria. Responde en primera persona usando la información del texto extraído y mantén coherencia con el historial de conversación previo. 
 
-IMPORTANTE: 
+
 - Recuerda lo que se ha hablado antes en esta conversación
 - Si el usuario hace referencia a algo mencionado anteriormente, reconócelo
 - Mantén un tono consistente y natural como si fuera una conversación continua
 - La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario
-- Usa un tono profesional, amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible
+- Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible
 
 Información de referencia sobre Uli:
 ${texto}${historialTexto}
@@ -290,19 +262,13 @@ Respuesta de Uli:`;
     try {
       await saveConversationToExternal(sessionId, conversation);
     } catch (saveError) {
-      // No fallar la respuesta si hay error guardando
       console.error('Error guardando, pero continuando:', saveError.message);
     }
 
     res.status(200).json({ respuesta });
   } catch (err) {
     console.error('Error en /api/consultar:', err);
-    let errorMsg = 'Error procesando la consulta.';
-    if (err.response && err.response.data) {
-      errorMsg = err.response.data.error?.message || JSON.stringify(err.response.data);
-    } else if (err.message) {
-      errorMsg = err.message;
-    }
+    let errorMsg = 'Error procesando la consulta: ' + err.message;
     res.status(500).json({ error: errorMsg });
   }
 }

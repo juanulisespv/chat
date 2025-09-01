@@ -133,23 +133,10 @@
       height: 12px;
       border: 1.5px solid #000;
       border-radius: 50%;
-      background: #fff;
+      background: #e0e0e0;
       box-shadow: 1px 1px 0 #888;
-      transition: background 0.2s, border-color 0.2s;
       cursor: pointer;
       display: inline-block;
-    }
-    .mac-btn.close:hover {
-      background: #ff5f57;
-      border-color: #ff5f57;
-    }
-    .mac-btn.max:hover {
-      background: #28c940;
-      border-color: #28c940;
-    }
-    .mac-btn.min:hover {
-      background: #fdbc40;
-      border-color: #fdbc40;
     }
     .mac-title {
       font-weight: bold;
@@ -174,6 +161,11 @@
       padding: 4px 8px;
       margin-bottom: 10px;
       border-radius: 3px;
+    }
+    .mac-input:focus-visible {
+      outline: none;
+      background: #f5f5f5;
+      border-color: #666;
     }
     .mac-btn-main {
       cursor: pointer;
@@ -489,13 +481,16 @@ ${curiosidadesHTML}
   function bringToFront(win) {
     topZIndex++;
     win.style.zIndex = topZIndex;
+    // Sin efectos visuales, solo cambio de z-index
   }
 
   // Abrir ventanas simuladas
   window.openWindow = async function(type) {
     // No ocultar ninguna ventana, solo abrir la nueva o mostrar la existente
     if (type === 'chat') {
-      document.getElementById('chat-window').style.display = 'block';
+      const chatWin = document.getElementById('chat-window');
+      chatWin.style.display = 'block';
+      bringToFront(chatWin);
       return;
     }
     let win = document.getElementById(type + '-window');
@@ -693,7 +688,7 @@ ${curiosidadesHTML}
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.mac-window').forEach(win => {
       makeWindowDraggable(win);
-      // Llevar al frente al hacer clic/tap en cualquier parte de la ventana, siempre
+      // Llevar al frente al hacer clic/tap en cualquier parte de la ventana
       win.addEventListener('mousedown', function() {
         bringToFront(win);
       }, true);
