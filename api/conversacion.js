@@ -16,9 +16,13 @@ module.exports = async (req, res) => {
   }
 
   try {
+    console.log('🔍 Endpoint /api/conversacion llamado');
+    
     // Obtener sessionId de los query parameters
     const url = new URL(req.url, `http://${req.headers.host}`);
     const sessionId = url.searchParams.get('sessionId');
+
+    console.log('📝 SessionId solicitado:', sessionId);
 
     if (!sessionId) {
       res.status(400).json({ 
@@ -32,6 +36,11 @@ module.exports = async (req, res) => {
     const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
     
+    console.log('🔍 Variables de entorno:', {
+      hasRedisUrl: !!redisUrl,
+      hasRedisToken: !!redisToken
+    });
+    
     if (!redisUrl || !redisToken) {
       res.status(500).json({ 
         error: 'Redis no configurado',
@@ -40,7 +49,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    // Upstash Redis
+    // Upstash Redis - importar aquí para evitar problemas en Vercel
     const { Redis } = require('@upstash/redis');
     const redis = new Redis({
       url: redisUrl,
