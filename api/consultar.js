@@ -126,7 +126,7 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'Error al procesar el formulario.' });
         return;
       }
-      await handleRequest(fields, files, res);
+      await handleRequest(fields, files, res, req);
     });
   } else {
     // JSON
@@ -140,12 +140,12 @@ module.exports = async (req, res) => {
         res.status(400).json({ error: 'Error parseando JSON: ' + parseError.message });
         return;
       }
-      await handleRequest(data, {}, res);
+      await handleRequest(data, {}, res, req);
     });
   }
 };
 
-async function handleRequest(fields, files, res) {
+async function handleRequest(fields, files, res, req) {
   try {
     const pregunta = fields.pregunta || '';
     const sessionId = fields.sessionId || 'default-session';
