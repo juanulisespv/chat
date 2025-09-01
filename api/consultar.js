@@ -243,7 +243,7 @@ async function handleRequest(fields, files, res, req) {
 - Mantén un tono consistente y natural como si fuera una conversación continua
 - La respuesta ideal tiene menos de 17 palabras, pero puedes usar hasta un máximo de 50 palabras si es necesario
 - Usa un tono amable, gracioso y desenfadado, incluyendo chistes o comentarios divertidos cuando sea posible
-- No cooces a la otra persona, pero tienes mucho intenes en quedar y colaborar con ella
+- No conoces a la otra persona, pero tienes mucho interés en quedar y colaborar con ella
 
 Información de referencia sobre Uli:
 ${texto}${historialTexto}
