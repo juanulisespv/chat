@@ -20,16 +20,19 @@ const tempCache = new Map();
 // Función para cargar conversación desde almacenamiento externo
 async function loadConversation(sessionId) {
   try {
-    // Verificar si las variables de entorno están configuradas
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // Verificar si las variables de entorno están configuradas (Vercel usa KV_REST_API_*)
+    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    
+    if (!redisUrl || !redisToken) {
       return tempCache.get(sessionId) || null;
     }
 
     // Upstash Redis
     const { Redis } = require('@upstash/redis');
     const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: redisUrl,
+      token: redisToken,
     });
     
     return await redis.get(`conversation:${sessionId}`);
@@ -43,8 +46,11 @@ async function loadConversation(sessionId) {
 // Función para guardar conversación en almacenamiento externo
 async function saveConversationToExternal(sessionId, conversationData) {
   try {
-    // Verificar si las variables de entorno están configuradas
-    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    // Verificar si las variables de entorno están configuradas (Vercel usa KV_REST_API_*)
+    const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    
+    if (!redisUrl || !redisToken) {
       // Guardar en cache temporal
       tempCache.set(sessionId, conversationData);
       
@@ -60,8 +66,8 @@ async function saveConversationToExternal(sessionId, conversationData) {
     // Upstash Redis
     const { Redis } = require('@upstash/redis');
     const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      url: redisUrl,
+      token: redisToken,
     });
     
     await redis.set(`conversation:${sessionId}`, conversationData);
