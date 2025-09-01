@@ -2,6 +2,8 @@
   "version": 2,
   "routes": [
     { "src": "/api/consultar", "dest": "/api/consultar.js" },
+    { "src": "/api/conversaciones", "dest": "/api/conversaciones.js" },
+    { "src": "/api/conversacion", "dest": "/api/conversacion.js" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
