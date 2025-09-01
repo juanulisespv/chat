@@ -250,6 +250,21 @@ ${texto}${historialTexto}
 Pregunta actual: ${pregunta}
 Respuesta de Uli:`;
 
+    // 📝 LOG DEL PROMPT COMPLETO PARA REFINAMIENTO
+    console.log('\n' + '='.repeat(80));
+    console.log('🤖 PROMPT ENVIADO A OPENAI:');
+    console.log('='.repeat(80));
+    console.log(prompt);
+    console.log('='.repeat(80));
+    console.log(`📊 ESTADÍSTICAS:
+- Caracteres del prompt: ${prompt.length}
+- SessionId: ${sessionId}
+- Pregunta: "${pregunta}"
+- Mensajes en historial: ${conversation.messages.length}
+- Temperatura: 0.7
+- Max tokens: 512`);
+    console.log('='.repeat(80) + '\n');
+
     const completion = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
       prompt,
@@ -257,6 +272,9 @@ Respuesta de Uli:`;
       temperature: 0.7,
     });
     const respuesta = completion.choices[0].text.trim();
+
+    // 📝 LOG DE LA RESPUESTA RECIBIDA
+    console.log('✅ RESPUESTA DE OPENAI:', respuesta);
 
     // Agregar la respuesta al historial
     conversation.messages.push({
