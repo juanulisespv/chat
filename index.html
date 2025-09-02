@@ -330,90 +330,94 @@
       }
     });
   });
-  // Función para generar HTML del CV desde datos embebidos
-  async function generateCVContent() {
-    // Datos del CV embebidos directamente
-    const cvData = {
-      "nombre": "Juan Ulises Pérez Visairas",
-      "subtitulo": "Prólogo: Quién es este tipo y por qué debería importarte",
-      "prologo": "Soy Juan Ulises (mis amigos me dicen Uli, y espero que después de leer esto tú también), un vitoriano del 83 que ha decidido que la vida es demasiado corta para hacer solo una cosa bien. Profesionalmente soy programador full stack y esa rara especie que vive en la intersección entre el marketing, la comunicación y el desarrollo tecnológico.\n\nPersonalmente soy el típico que siempre está aprendiendo algo nuevo, entrenando para algo, o planeando el próximo viaje.\n\nMi filosofía es simple: si algo me da curiosidad, me meto de cabeza. Esto me ha llevado a trabajar desde Mercedes Benz hasta startups, de hacer campañas de marketing a programar webs, y de competir en triatlones a intentar no hacer el ridículo surfeando.",
-      "contacto": {
-        "ubicacion": "Vitoria, España (nacido en 1983)",
-        "email": "juanulisespv@gmail.com",
-        "disponibilidad": "Trabajo remoto preferido, disponible para viajar, licencia de conducir y coche propio"
-      },
-      "formacion": {
-        "titulo": "Capítulo 1: Los Años de Formación (o Cómo Acabé Siendo Esto)",
-        "descripcion": "Todo empezó con una Licenciatura en Publicidad y Relaciones Públicas en la Universidad Nebrija, porque pensaba que ser creativo era genial (y sigue siéndolo). Luego vino un MBA en Dirección de Marketing, Comunicación Empresarial y Ventas en ESDEN, porque alguien me dijo que también era importante entender de números.\n\nPero aquí viene la parte divertida: después de años trabajando en marketing digital, decidí que quería entender qué pasaba 'detrás del telón'. Así que me apunté a un FP2 en Desarrollo de Aplicaciones Web bilingüe en ICjardin. Fue duro, no voy a mentir, pero aprendí muchísimo y esa sensación de dominar algo completamente nuevo me enganchó.\n\nEl caso es que todavía me quedé con sed de conocimiento, ahora estoy cursando un Grado en Ingeniería Informática en EUNIV. Solo me quedan 120 créditos. Solo. Sí, a veces sufro entre algoritmos y estructuras de datos, pero cada concepto que entiendo me emociona como un niño en una tienda de caramelos. Es esa combinación de dolor y satisfacción que solo entienden los que han decidido estudiar programación después de los 30.",
-        "certificaciones": "Google Ads, Google Analytics, Marketing Internacional de Cambridge, y varias más que probablemente olvidaré mencionar en entrevistas importantes"
-      },
-      "experiencia": {
-        "titulo": "Capítulo 2: La Odisea Profesional (Con Más Plot Twists que una Serie de Netflix)",
-        "trabajos": [
-          {
-            "puesto": "Formador en E-commerce",
-            "empresa": "Cruz Roja",
-            "periodo": "Jun 2025",
-            "descripcion": "Acabo de terminar un curso de 100 horas sobre competencias digitales donde ayudé a gente a no tener miedo de internet y a vender cosas online sin que les saliera humo del ordenador. Fue muy gratificante ver cómo alguien pasa de '¿qué es un dominio?' a montar su tienda online. Un mes intenso, pero de esos que te recuerdan por qué me encanta la educación y enseñar lo que sé. Y no, no he cerrado esa puerta: la docencia tiene algo especial que me engancha."
-          },
-          {
-            "puesto": "Marketing Manager",
-            "empresa": "DAISALUX",
-            "periodo": "Oct 2016 – May 2025",
-            "descripcion": "Casi 9 años coordinando lanzamientos de producto, haciendo SEO (persiguiendo al señor Google), SEM (pagándole al señor Google), creando contenidos web, gestionando redes sociales, y siendo el intermediario entre el departamento de I+D y las agencias de marketing. Aquí aprendí que 'para ayer' es realmente una unidad de tiempo válida y que 'solo es un cambio pequeño' nunca, JAMÁS, es un cambio pequeño."
-          },
-          {
-            "puesto": "Project Manager",
-            "empresa": "EXPONENCIAL",
-            "periodo": "Mar 2012 – Sep 2016",
-            "descripcion": "Cuatro años desarrollando webs y ecommerce, diseñando contenido y asesorando en marketing. Esta época fue cuando descubrí que me gustaba tanto la parte técnica como la creativa. Era como ser traductor entre programadores y marketers, que básicamente hablan idiomas completamente diferentes."
-          },
-          {
-            "puesto": "Comunicación",
-            "empresa": "Mercedes Benz",
-            "periodo": "Ene 2011 – Ene 2012",
-            "descripcion": "Soporte en comunicación, diseño gráfico y eventos corporativos (y donde confirmé que los coches alemanes son tan precisos como dicen)."
-          },
-          {
-            "puesto": "Marketing y Ventas",
-            "empresa": "ABGAM",
-            "periodo": "Oct 2009 – Ene 2011",
-            "descripcion": "Marketing digital con Dassault Systèmes (donde descubrí que el software industrial también necesita marketing)."
-          },
-          {
-            "puesto": "Proyectos de comunicación",
-            "empresa": "PRISMAGLOBAL",
-            "periodo": "Mar 2008 – Jun 2009",
-            "descripcion": "Captación de leads y planes estratégicos (donde aprendí que no todos los leads son buenos leads)."
-          }
-        ]
-      },
-      "habilidades": {
-        "titulo": "Capítulo 3: Arsenal de Habilidades (o Mi Caja de Herramientas Digital)",
-        "lenguajes": "JavaScript, Python, PHP, SQL, HTML5, CSS3, React, Next.js, Node.js - mi stack completo de programador full stack. También trabajo con APIs de IA como OpenAI y Gemini, porque el futuro ya está aquí y hay que subirte al tren. Algunos mejor que otros, pero todos con cariño y capacidad tanto para frontend como backend.",
-        "plataformas": "WordPress, Prestashop, y prácticamente cualquier CMS que me pongas delante.",
-        "herramientas": "Marketing digital, IA, tecnologías emergentes, Canva, Office, Adobe Creative Suite. Soy de los que cree que la herramienta no hace al profesional, pero tener buenas herramientas ayuda bastante.",
-        "idiomas": "Español nativo, Inglés nivel C1 (confirmado tras prácticas universitarias en EE.UU. donde sobreviví pidiendo comida y entendiendo las clases)."
-      },
-      "personal": {
-        "titulo": "Capítulo 4: La Vida Fuera de la Pantalla",
-        "deportes": "Durante años fui triatleta. De esos que se levantan a las 6 AM para entrenar antes de trabajar y que piensan que 'más es mejor'. Hasta que mi cuerpo me enseñó que también tiene voz y voto en estas decisiones. Ahora soy más inteligente: entreno, corro, monto en bici, nado y surfeo, pero escuchando más al cuerpo y menos al ego. El running sigue siendo mi gran pasión deportiva - hay algo terapéutico en salir a correr que nunca me cansa. El surf me gusta y lo disfruto, pero seamos honestos: nada supera la sensación de una buena carrera, ya sea por montaña o por la playa.",
-        "musica": "Mi Spotify es un caos organizado: Queen para sentirme épico trabajando, Dire Straits para el flow profundo, Foo Fighters para el gym, jazz suave para relajar, y sí, flamenco fusión cuando mi lado español necesita combustible. Las bandas sonoras de películas son mi secreto para concentrarme: hacen que escribir código parezca salvar el mundo.",
-        "viajes": "Soy de los que disfrutan igual subiendo una montaña en Pirineos que tomándose un café en una terraza de Lisboa. Mi pareja y yo somos bastante activos viajando, aunque ella probablemente sea más rápida subiendo cuestas (dato que jamás admitiré públicamente). Mi checklist de viaje perfecto: naturaleza, buena comida local, posibilidad de hacer deporte, y conexión a internet decente por si surge algo de trabajo.",
-        "curiosidades": [
-          "Ex-bloguero: Mantuve un blog con más de 1000 seguidores donde escribía sobre marketing, tecnología y proyectos personales. Era mi forma de procesar lo que aprendía y ayudar a otros en situaciones similares. Ahora está en modo hibernación y los seguidores... bueno, quién sabe dónde estarán, pero fue una buena época de compartir conocimiento.",
-          "Chef de supervivencia: Cocino rápido y saludable, que es mi manera diplomática de decir que hago milagros con cuatro ingredientes y poco tiempo. Mis especialidades son 'fusión de lo que hay en la nevera' y 'pasta con lo que pillé en el mercado'.",
-          "Cazador de vinilos: Tengo un radar especial para encontrar joyas musicales en mercadillos. Es mi versión de la búsqueda del tesoro, solo que el tesoro suena bien.",
-          "Early adopter compulsivo: Pruebo apps y herramientas nuevas constantemente. Mi teléfono es un cementerio de apps que 'iban a revolucionar mi productividad'."
-        ]
-      },
-      "epilogo": {
-        "busco": "Proyectos donde pueda combinar creatividad y tecnología, donde el aprendizaje sea constante y donde el impacto sea real. Me motivan los equipos diversos, los retos complejos y las empresas que entienden que la innovación viene de conectar mundos aparentemente diferentes. También me apasiona la educación y la formación, así que siempre estoy abierto a oportunidades donde pueda enseñar y compartir conocimiento.",
-        "ofrezco": "Experiencia real, curiosidad infinita, esa rara habilidad de traducir entre departamentos que hablan idiomas diferentes, y una genuina pasión por educar y formar. Soy el tipo que puede explicar conceptos técnicos complejos a marketers, y estrategias de marketing a programadores, sin que nadie acabe frustrado.",
-        "garantia": "Humor incluido, curiosidad ilimitada, y un nivel de energía que se mantiene bastante bien sin necesidad de litros de café.",
-        "contacto_final": "P.D.: Si has llegado hasta aquí, probablemente tengamos cosas en común. Escríbeme y hablemos de proyectos, tecnología, marketing, deportes, música, o de cualquier cosa interesante que se te ocurra."
-      }
-    };
+
+// Función para generar HTML del CV desde datos embebidos
+async function generateCVContent() {
+  // Datos del CV embebidos directamente
+  const cvData = {
+    "nombre": "Juan Ulises Pérez Visairas",
+    "subtitulo": "Prólogo: Quién es este tipo y por qué debería importarte",
+    "prologo": "Soy Juan Ulises (mis amigos me dicen Uli, y espero que después de leer esto tú también), un vitoriano del 83 que ha decidido que la vida es demasiado corta para hacer solo una cosa bien. Profesionalmente soy esa rara especie que vive en la intersección entre el marketing, la comunicación y el desarrollo tecnológico.\n\nPersonalmente soy el típico que siempre está aprendiendo algo nuevo, entrenando para algo, o planeando el próximo viaje.\n\nMi filosofía es simple: si algo me da curiosidad, me meto de cabeza. Esto me ha llevado a trabajar en empresas como Mercedes Benz o en StartUps, de hacer campañas de marketing a programar aplicaciones web, y de competir en triatlones a intentar no hacer el ridículo surfeando.",
+    "contacto": {
+      "ubicacion": "Vitoria, España (nacido en 1983)",
+      "email": "juanulisespv@gmail.com",
+      "disponibilidad": "Trabajo remoto preferido, disponible para viajar, licencia de conducir y coche propio"
+    },
+    "formacion": {
+      "titulo": "Capítulo 1: Los Años de Formación (o Cómo Acabé Siendo Esto)",
+      "descripcion": "Todo empezó con una Licenciatura en Publicidad y Relaciones Públicas en la Universidad Nebrija, porque pensaba que ser creativo era genial (y sigue siéndolo). Luego vino un MBA en Dirección de Marketing, Comunicación Empresarial y Ventas en ESDEN, porque alguien me dijo que también era importante entender de números.\n\nPero aquí viene la parte divertida: después de años trabajando en marketing digital, decidí que quería entender qué pasaba 'detrás del telón'. Así que me apunté a un FP en Desarrollo de Aplicaciones Web bilingüe en ICjardin. Fue intenso, no voy a mentir, pero aprendí muchísimo y esa sensación de dominar algo completamente nuevo me enganchó para siempre.\n\nAún con sed de conocimiento, actualmente estoy a punto de acabar un Grado en Ingeniería Informática en EUNIV. Sí, a veces sufro entre algoritmos y estructuras de datos, pero cada concepto que domino me emociona como un niño en una tienda de caramelos. Es esa mezcla de desafío y satisfacción que solo entienden los que han decidido estudiar programación después de los 30.",
+      "certificaciones": "Google Ads, Google Analytics, Marketing Internacional de Cambridge, y varias más que probablemente olvide mencionar en entrevistas importantes"
+    },
+    "experiencia": {
+      "titulo": "Capítulo 2: La Odisea Profesional (Con Más Plot Twists que una Serie de Netflix)",
+      "trabajos": [
+        {
+          "puesto": "Formador en E-commerce",
+          "empresa": "Cruz Roja",
+          "periodo": "Jun 2025",
+          "descripcion": "Acabo de terminar un curso de 100 horas sobre competencias digitales donde ayudé a personas a superar el miedo a internet y a vender online sin que les saliera humo del ordenador. Fue muy gratificante ver cómo alguien pasa de '¿qué es un dominio?' a montar su tienda online. Un mes intenso, pero de esos que te recuerdan por qué me fascina la educación y enseñar lo que sé. Y no, no he cerrado esa puerta: la docencia tiene algo especial que me engancha."
+        },
+        {
+          "puesto": "Marketing Manager",
+          "empresa": "DAISALUX",
+          "periodo": "Oct 2016 – May 2025",
+          "descripcion": "Casi 9 años coordinando lanzamientos de producto, optimizando SEO (persiguiendo al señor Google), gestionando SEM (pagándole al señor Google), creando contenidos web, manejando redes sociales, y siendo el puente entre el departamento de I+D y las agencias de marketing. Aquí aprendí que 'para ayer' es realmente una unidad de tiempo válida y que 'solo es un cambio pequeño' nunca, JAMÁS, es un cambio pequeño."
+        },
+        {
+          "puesto": "Project Manager",
+          "empresa": "EXPONENCIAL",
+          "periodo": "Mar 2012 – Sep 2016",
+          "descripcion": "Cuatro años desarrollando webs y ecommerce, diseñando contenido y asesorando en marketing digital. Esta época fue cuando descubrí que me gustaba tanto la parte técnica como la creativa. Era como ser traductor entre programadores y marketers, que básicamente hablan idiomas completamente diferentes."
+        },
+        {
+          "puesto": "Comunicación",
+          "empresa": "Mercedes Benz",
+          "periodo": "Ene 2011 – Ene 2012",
+          "descripcion": "Soporte en comunicación, diseño gráfico y eventos corporativos (donde confirmé que los coches alemanes son tan precisos como dicen)."
+        },
+        {
+          "puesto": "Marketing y Ventas",
+          "empresa": "ABGAM",
+          "periodo": "Oct 2009 – Ene 2011",
+          "descripcion": "Marketing digital con Dassault Systèmes (donde descubrí que el software industrial también necesita marketing)."
+        },
+        {
+          "puesto": "Proyectos de comunicación",
+          "empresa": "PRISMAGLOBAL",
+          "periodo": "Mar 2008 – Jun 2009",
+          "descripcion": "Captación de leads y planes estratégicos (donde aprendí que no todos los leads son buenos leads)."
+        }
+      ]
+    },
+    "habilidades": {
+      "titulo": "Capítulo 3: Arsenal de Habilidades (o Mi Caja de Herramientas Digital)",
+      "lenguajes": "JavaScript, Python, PHP, SQL, HTML5, CSS3, React, Next.js, Node.js - mi stack completo de programador full stack. También trabajo con APIs de IA como OpenAI y Gemini, porque el futuro ya está aquí y hay que subirse al tren. Algunos los manejo mejor que otros, pero todos con cariño y capacidad tanto para frontend como backend.",
+      "plataformas": "WordPress, Prestashop, y prácticamente cualquier CMS que me pongas delante.",
+      "herramientas": "Marketing digital, IA, tecnologías emergentes, Canva, Office, Adobe Creative Suite. Soy de los que cree que la herramienta no hace al profesional, pero tener buenas herramientas ayuda bastante.",
+      "idiomas": "Español nativo, Inglés nivel C1 (confirmado tras prácticas universitarias en EE.UU. donde sobreviví pidiendo comida y entendiendo las clases)."
+    },
+    "personal": {
+      "titulo": "Capítulo 4: La Vida Fuera de la Pantalla",
+      "deportes": "Durante años fui triatleta. De esos que se levantan a las 6 AM para entrenar antes de trabajar y que piensan que 'más es mejor'. Hasta que mi cuerpo me enseñó que también tiene voz y voto en estas decisiones. Ahora soy más inteligente: entreno, corro, monto en bici, nado y surfeo, pero escuchando más al cuerpo y menos al ego. El running sigue siendo mi gran pasión deportiva - hay algo terapéutico en salir a correr que nunca me cansa. El surf me gusta y lo disfruto, pero seamos honestos: nada supera la sensación de una buena carrera, ya sea por montaña o por la costa.",
+      "musica": "Mi Spotify es un caos organizado: rock clásico para los días épicos, indie alternativo para el flow creativo, Foo Fighters para el gym, LoFi suave para relajarme y concentrarme, y sí, algo de electrónica cuando toca programar hasta tarde. Las bandas sonoras de películas son mi secreto para el trabajo profundo: transforman cualquier tarea en una misión épica.",
+      "viajes": "Disfruto igual subiendo una montaña en los Pirineos que tomándome un café en una terraza de Lisboa. Mi pareja y yo somos bastante activos viajando, aunque ella probablemente sea más rápida subiendo cuestas (dato que jamás admitiré públicamente). Mi checklist de viaje perfecto: naturaleza, buena comida local, posibilidad de hacer deporte, y conexión a internet decente por si surge algo de trabajo.",
+      "curiosidades": [
+        "Ex-bloguero: Mantuve un blog con más de 1000 seguidores donde escribía sobre marketing, tecnología y proyectos personales. Era mi forma de procesar lo que aprendía y ayudar a otros en situaciones similares. Ahora está en hibernación y los seguidores... bueno, quién sabe dónde estarán, pero fue una excelente época de compartir conocimiento.",
+        "Chef de supervivencia: Cocino rápido y saludable, que es mi manera diplomática de decir que hago milagros con cuatro ingredientes y poco tiempo. Mis especialidades son 'fusión de lo que hay en la nevera' y 'pasta con lo que encontré en el mercado'.",
+        "Coleccionista musical: Me encanta descubrir música nueva y redescubrir clásicos. Siempre estoy explorando géneros, artistas emergentes y esas joyas ocultas que hacen que valga la pena tener buenas playlist.",
+        "Early adopter compulsivo: Pruebo apps y herramientas nuevas constantemente. Mi teléfono es un cementerio de aplicaciones que 'iban a revolucionar mi productividad'."
+      ]
+    },
+    "epilogo": {
+      "busco": "Proyectos donde pueda combinar creatividad y tecnología, donde el aprendizaje sea constante y donde el impacto sea real. Me motivan los equipos diversos, los retos complejos y las empresas que entienden que la innovación viene de conectar mundos aparentemente diferentes. También me apasiona la educación y la formación, así que siempre estoy abierto a oportunidades donde pueda enseñar y compartir conocimiento.",
+      "ofrezco": "Experiencia real, curiosidad infinita, esa rara habilidad de traducir entre departamentos que hablan idiomas diferentes, y una genuina pasión por educar y formar. Soy el tipo que puede explicar conceptos técnicos complejos a marketers y estrategias de marketing a programadores, sin que nadie acabe frustrado.",
+      "garantia": "Humor incluido, curiosidad ilimitada, y un nivel de energía que se mantiene bastante bien sin necesidad de litros de café.",
+      "contacto_final": "P.D.: Si has llegado hasta aquí, probablemente tengamos cosas en común. Escríbeme y hablemos de proyectos, tecnología, marketing, deportes, música, o de cualquier cosa interesante que se te ocurra."
+    }
+  };
+};
+
+
     
     // Generar HTML para la experiencia
     const experienciaHTML = cvData.experiencia.trabajos.map(exp => 
